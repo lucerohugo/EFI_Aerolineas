@@ -69,8 +69,8 @@
                     {% endif %}
 
 
-                    <!-- Paginación -->
-                    {% if pasajeros.has_other_pages %}
+                    <!-- Paginación solo visible para staff/admin -->
+                    {% if request.user.is_staff and pasajeros.has_other_pages %}
                         <nav aria-label="Paginación de pasajeros">
                             <ul class="pagination justify-content-center">
                                 {% if pasajeros.has_previous %}

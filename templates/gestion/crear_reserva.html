@@ -163,13 +163,13 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ reserva_form.metodo_pago.id_for_label }}" class="form-label"><i class="fas fa-credit-card"></i> Método de pago</label>
-                                {{ reserva_form.metodo_pago }}
-                                {% if reserva_form.metodo_pago.errors %}
-                                    <div class="text-danger">{{ reserva_form.metodo_pago.errors }}</div>
-                                {% endif %}
-                            </div>
+                                <div class="mb-3">
+                                    <label for="id_metodo_pago" class="form-label">Método de Pago</label>
+                                    <select name="metodo_pago" id="id_metodo_pago" class="form-control" required>
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="tarjeta">Tarjeta</option>
+                                    </select>
+                                </div>
                         </div>
                     </div>
                     
