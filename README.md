@@ -4,7 +4,7 @@
 AeroEFI es una aplicación web desarrollada en Django para la gestión integral de vuelos, reservas y pasajeros de una aerolínea. Permite administrar vuelos, gestionar reservas, consultar pasajeros y realizar búsquedas de manera eficiente y sencilla.
 
 ## Características principales
-- Registro e inicio de sesión de usuarios (solo clientes, no staff)
+- Registro e inicio de sesión de usuarios 
 - Panel de control con estadísticas de vuelos, reservas y pasajeros
 - Gestión de vuelos: listado, búsqueda y detalle
 - Gestión de reservas: creación, consulta, cancelación
