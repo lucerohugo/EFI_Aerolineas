@@ -1,0 +1,211 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-05 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Navegación
+msgid "Inicio"
+msgstr "Inicio"
+
+msgid "Buscar Vuelos"
+msgstr "Buscar Vuelos"
+
+msgid "Vuelos"
+msgstr "Vuelos"
+
+msgid "Pasajeros"
+msgstr "Pasajeros"
+
+msgid "Buscar Reserva"
+msgstr "Buscar Reserva"
+
+msgid "Mis Reservas"
+msgstr "Mis Reservas"
+
+msgid "Administración"
+msgstr "Administración"
+
+msgid "Cerrar Sesión"
+msgstr "Cerrar Sesión"
+
+msgid "Iniciar Sesión"
+msgstr "Iniciar Sesión"
+
+msgid "Registrarse"
+msgstr "Registrarse"
+
+# Página principal
+msgid "Bienvenido a AeroEFI"
+msgstr "Bienvenido a AeroEFI"
+
+msgid "Sistema integral de gestión de aerolíneas"
+msgstr "Sistema integral de gestión de aerolíneas"
+
+msgid "Gestiona vuelos, reservas y pasajeros de manera eficiente"
+msgstr "Gestiona vuelos, reservas y pasajeros de manera eficiente"
+
+msgid "Total Vuelos"
+msgstr "Total Vuelos"
+
+msgid "Total Pasajeros"
+msgstr "Total Pasajeros"
+
+msgid "Total Reservas"
+msgstr "Total Reservas"
+
+msgid "Vuelos Hoy"
+msgstr "Vuelos Hoy"
+
+msgid "Acciones Rápidas"
+msgstr "Acciones Rápidas"
+
+msgid "Próximos Vuelos"
+msgstr "Próximos Vuelos"
+
+# Vuelos
+msgid "Lista de Vuelos"
+msgstr "Lista de Vuelos"
+
+msgid "Filtros"
+msgstr "Filtros"
+
+msgid "Origen"
+msgstr "Origen"
+
+msgid "Destino"
+msgstr "Destino"
+
+msgid "Estado"
+msgstr "Estado"
+
+msgid "Filtrar"
+msgstr "Filtrar"
+
+msgid "Limpiar"
+msgstr "Limpiar"
+
+msgid "Nuevo Vuelo"
+msgstr "Nuevo Vuelo"
+
+msgid "Fecha/Hora Salida"
+msgstr "Fecha/Hora Salida"
+
+msgid "Fecha/Hora Llegada"
+msgstr "Fecha/Hora Llegada"
+
+msgid "Avión"
+msgstr "Avión"
+
+msgid "Precio"
+msgstr "Precio"
+
+msgid "Disponibles"
+msgstr "Disponibles"
+
+msgid "Acciones"
+msgstr "Acciones"
+
+msgid "Ver"
+msgstr "Ver"
+
+msgid "Reservar"
+msgstr "Reservar"
+
+msgid "Editar"
+msgstr "Editar"
+
+# Reservas
+msgid "Crear Reserva"
+msgstr "Crear Reserva"
+
+msgid "Información del Pasajero"
+msgstr "Información del Pasajero"
+
+msgid "Nombre"
+msgstr "Nombre"
+
+msgid "Apellido"
+msgstr "Apellido"
+
+msgid "Documento"
+msgstr "Documento"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Teléfono"
+msgstr "Teléfono"
+
+msgid "Fecha de Nacimiento"
+msgstr "Fecha de Nacimiento"
+
+msgid "Selección de Asiento"
+msgstr "Selección de Asiento"
+
+msgid "Asiento"
+msgstr "Asiento"
+
+msgid "Confirmar Reserva"
+msgstr "Confirmar Reserva"
+
+msgid "Volver"
+msgstr "Volver"
+
+# Estados
+msgid "Programado"
+msgstr "Programado"
+
+msgid "En Vuelo"
+msgstr "En Vuelo"
+
+msgid "Completado"
+msgstr "Completado"
+
+msgid "Cancelado"
+msgstr "Cancelado"
+
+msgid "Retrasado"
+msgstr "Retrasado"
+
+msgid "Confirmada"
+msgstr "Confirmada"
+
+msgid "Pendiente"
+msgstr "Pendiente"
+
+msgid "Pagada"
+msgstr "Pagada"
+
+# Mensajes
+msgid "Reserva creada exitosamente"
+msgstr "Reserva creada exitosamente"
+
+msgid "Error al crear la reserva"
+msgstr "Error al crear la reserva"
+
+msgid "Reserva cancelada exitosamente"
+msgstr "Reserva cancelada exitosamente"
+
+msgid "No se encontraron vuelos"
+msgstr "No se encontraron vuelos"
+
+msgid "No se encontraron reservas"
+msgstr "No se encontraron reservas"
+
+msgid "No se encontraron pasajeros"
+msgstr "No se encontraron pasajeros"

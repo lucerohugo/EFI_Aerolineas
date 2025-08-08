@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% trans 'Sistema de Gestión de Aerolíneas' %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .card-stats {
+            border-left: 4px solid #007bff;
+        }
+        .seat {
+            width: 35px;
+            height: 35px;
+            margin: 2px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .seat.disponible {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .seat.reservado {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .seat.mantenimiento {
+            background-color: #ffc107;
+            color: black;
+            border-color: #ffc107;
+        }
+        .flight-card {
+            transition: transform 0.2s;
+        }
+        .flight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.8em;
+        }
+        .gap-navbar > .nav-item {
+            margin-right: 2rem;
+        }
+        .navbar-nav .nav-link, .navbar-nav .nav-link:visited, .navbar-nav .nav-link:active {
+            color: #fff !important;
+        }
+        .navbar-nav .nav-link:hover, .navbar-nav .nav-link:focus {
+            color: #e2e6ea !important;
+        }
+        .navbar-nav .dropdown-menu {
+            background: #2563eb;
+        }
+        .navbar-nav .dropdown-item {
+            color: #fff;
+        }
+        .navbar-nav .dropdown-item:hover, .navbar-nav .dropdown-item:focus {
+            background: #1d4ed8;
+            color: #fff;
+        }
+    </style>
+</head>
+    <body>
+    {# Eliminado bloque duplicado de mensajes aquí #}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding-left: 0;">
+        <div class="container-fluid ps-3 pe-3">
+            <!-- Selector de idioma -->
+            <div class="navbar-nav me-3">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-globe"></i>
+                        {% if LANGUAGE_CODE == 'es' %}ES{% else %}EN{% endif %}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <form action="{% url 'set_language' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                {# Si estamos en /en/, quitar el prefijo al volver a español #}
+                                {% if request.path|slice:"0:4" == '/en/' %}
+                                    <input name="next" type="hidden" value="{{ request.path|slice:"3:" }}" />
+                                {% elif request.path == '/en/' %}
+                                    <input name="next" type="hidden" value="/" />
+                                {% else %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                                {% endif %}
+                                <button type="submit" name="language" value="es" class="dropdown-item">
+                                     Español
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form action="{% url 'set_language' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                                <button type="submit" name="language" value="en" class="dropdown-item">
+                                     English
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-plane"></i> AeroEFI
+            </a>
+            <script>
+                // Forzar recarga tras cambiar idioma
+                document.querySelectorAll('form[action$="set_language/"]').forEach(function(form) {
+                    form.addEventListener('submit', function(e) {
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 300);
+                    });
+                });
+            </script>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto gap-navbar mx-auto justify-content-center" style="float:none;">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'buscar_vuelos' %}">
+                            <i class="fas fa-search"></i> {% trans "Buscar Vuelos" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'lista_vuelos' %}">
+                            <i class="fas fa-plane-departure"></i> {% trans "Vuelos" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'lista_pasajeros' %}">
+                            <i class="fas fa-users"></i> {% trans "Pasajeros" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'buscar_reserva' %}">
+                            <i class="fas fa-ticket-alt"></i> {% trans "Buscar Reserva" %}
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav gap-navbar">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'lista_reservas' %}">
+                                    <i class="fas fa-list"></i> {% trans "Mis Reservas" %}
+                                </a></li>
+                                {% if user.is_staff %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/admin/">
+                                        <i class="fas fa-cog"></i> {% trans "Administración" %}
+                                    </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> {% trans "Cerrar Sesión" %}
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> {% trans "Iniciar Sesión" %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    <div class="toast align-items-center border-0 show position-fixed top-50 start-50 translate-middle" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 2000; min-width: 420px; max-width: 90vw; font-size: 1.35rem; background: #22c55e; color: #fff; box-shadow: 0 6px 32px rgba(34,197,94,0.25);">
+                        <div class="d-flex">
+                            <div class="toast-body w-100 text-center fw-bold">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show auto-dismiss-alert" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        // Ocultar automáticamente las alertas después de 4 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.querySelectorAll('.auto-dismiss-alert').forEach(function(alert) {
+                    if (alert.classList.contains('show')) {
+                        var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    }
+                });
+                // Ocultar toast centrado
+                var toast = document.querySelector('.toast.position-fixed');
+                if (toast) {
+                    var bsToast = bootstrap.Toast.getOrCreateInstance(toast);
+                    bsToast.hide();
+                }
+            }, 4000);
+        });
+    </script>
+
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 {% trans 'Sistema de Gestión de Aerolíneas' %} - Cugiani - Lucero - Perotti</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

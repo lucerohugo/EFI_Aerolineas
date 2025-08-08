@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Reserva - {{ vuelo.origen }} → {{ vuelo.destino }}{% endblock %}
+
+{% block content %}
+{% if reserva_exitosa_codigo %}
+<!-- Modal Bootstrap emergente mejorado -->
+<div class="modal fade" id="reservaExitosaModal" tabindex="-1" aria-labelledby="reservaExitosaLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content animate__animated animate__zoomIn">
+      <div class="modal-header bg-success text-white border-0 justify-content-center">
+        <div class="w-100 text-center">
+          <i class="fas fa-check-circle fa-4x mb-2" style="color:#fff;"></i>
+          <h4 class="modal-title mt-2" id="reservaExitosaLabel">¡Reserva Exitosa!</h4>
+        </div>
+      </div>
+      <div class="modal-body text-center">
+        <p class="fs-5 mb-3">¡Tu reserva fue realizada con éxito!</p>
+        <div class="mb-3">
+          <span class="badge bg-primary fs-4 py-2 px-4">Código: {{ reserva_exitosa_codigo }}</span>
+        </div>
+        <p class="mb-2">Puedes consultar los detalles en <a href="{% url 'buscar_reserva' %}?codigo_reserva={{ reserva_exitosa_codigo }}" class="fw-bold text-success">Buscar Reserva</a>.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <a href="{% url 'buscar_reserva' %}?codigo_reserva={{ reserva_exitosa_codigo }}" class="btn btn-success btn-lg px-5 shadow-sm" id="aceptarReservaModal">
+          <i class="fas fa-arrow-right"></i> Aceptar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var modalEl = document.getElementById('reservaExitosaModal');
+    if (modalEl) {
+      var modal = new bootstrap.Modal(modalEl, {
+        backdrop: 'static',
+        keyboard: false
+      });
+      modal.show();
+      var aceptarBtn = document.getElementById('aceptarReservaModal');
+      if (aceptarBtn) {
+        aceptarBtn.addEventListener('click', function() {
+          // Solo cerrar el modal, la redirección ya está en el href
+          modal.hide();
+        });
+      }
+    }
+  });
+</script>
+{% endif %}
+{% if reserva_form.errors %}
+  <div class="alert alert-danger mt-3">
+    <strong>Errores en la reserva:</strong>
+    <ul>
+      {% for field, errors in reserva_form.errors.items %}
+        <li><strong>{{ field|capfirst }}:</strong> {{ errors|join:', ' }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'detalle_vuelo' vuelo.id %}">{{ vuelo.origen }} → {{ vuelo.destino }}</a></li>
+                <li class="breadcrumb-item active">Crear Reserva</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-ticket-alt"></i> Crear Nueva Reserva</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-user"></i> Información del Pasajero</h5>
+                            <hr>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.nombre.id_for_label }}" class="form-label">Nombre *</label>
+                                {{ pasajero_form.nombre }}
+                                {% if pasajero_form.nombre.errors %}
+                                    <div class="text-danger">{{ pasajero_form.nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.apellido.id_for_label }}" class="form-label">Apellido *</label>
+                                {{ pasajero_form.apellido }}
+                                {% if pasajero_form.apellido.errors %}
+                                    <div class="text-danger">{{ pasajero_form.apellido.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.tipo_documento.id_for_label }}" class="form-label">Tipo de Documento *</label>
+                                {{ pasajero_form.tipo_documento }}
+                                {% if pasajero_form.tipo_documento.errors %}
+                                    <div class="text-danger">{{ pasajero_form.tipo_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.documento.id_for_label }}" class="form-label">Número de Documento *</label>
+                                {{ pasajero_form.documento }}
+                                {% if pasajero_form.documento.errors %}
+                                    <div class="text-danger">{{ pasajero_form.documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.email.id_for_label }}" class="form-label">Email *</label>
+                                {{ pasajero_form.email }}
+                                {% if pasajero_form.email.errors %}
+                                    <div class="text-danger">{{ pasajero_form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.telefono.id_for_label }}" class="form-label">Teléfono *</label>
+                                {{ pasajero_form.telefono }}
+                                {% if pasajero_form.telefono.errors %}
+                                    <div class="text-danger">{{ pasajero_form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ pasajero_form.fecha_nacimiento.id_for_label }}" class="form-label">Fecha de Nacimiento *</label>
+                                {{ pasajero_form.fecha_nacimiento }}
+                                {% if pasajero_form.fecha_nacimiento.errors %}
+                                    <div class="text-danger">{{ pasajero_form.fecha_nacimiento.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ reserva_form.metodo_pago.id_for_label }}" class="form-label"><i class="fas fa-credit-card"></i> Método de pago</label>
+                                {{ reserva_form.metodo_pago }}
+                                {% if reserva_form.metodo_pago.errors %}
+                                    <div class="text-danger">{{ reserva_form.metodo_pago.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-chair"></i> Selección de Asiento</h5>
+                            <hr>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Asiento *</label>
+                                <!-- Mapa visual de asientos -->
+                                <div id="seat-map" style="overflow-x:auto;">
+                                    <table class="table table-bordered text-center align-middle" style="max-width: 100%;">
+                                        <tbody>
+                                        {% for fila, asientos in asientos_por_fila.items %}
+                                            <tr>
+                                                <td class="fw-bold">{{ fila }}</td>
+                                                {% for asiento in asientos %}
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm seat-btn {% if asiento.reservado %}btn-secondary disabled{% else %}btn-outline-primary{% endif %}"
+                                                            data-seat-id="{{ asiento.id }}" {% if asiento.reservado %}disabled{% endif %}>
+                                                            {{ asiento.numero }}
+                                                        </button>
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Campo oculto para el asiento -->
+                                <input type="hidden" name="asiento" id="id_asiento_hidden" value="">
+                                <div id="asiento-error" class="text-danger"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{ reserva_form.vuelo }}
+                    <!-- Campo método de pago eliminado de la parte inferior -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seatButtons = document.querySelectorAll('.seat-btn');
+    const hiddenInput = document.getElementById('id_asiento_hidden');
+    const errorDiv = document.getElementById('asiento-error');
+    seatButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Deseleccionar todos
+            seatButtons.forEach(b => b.classList.remove('btn-primary'));
+            seatButtons.forEach(b => b.classList.add('btn-outline-primary'));
+            // Seleccionar este
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary');
+            hiddenInput.value = this.getAttribute('data-seat-id');
+            errorDiv.textContent = '';
+        });
+    });
+    // Validar antes de enviar
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        if (!hiddenInput.value) {
+            e.preventDefault();
+            errorDiv.textContent = 'Debe seleccionar un asiento.';
+        }
+    });
+});
+</script>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Confirmar Reserva
+                            </button>
+                            <a href="{% url 'detalle_vuelo' vuelo.id %}" class="btn btn-secondary btn-lg ms-2">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Resumen del Vuelo</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Ruta:</strong></td>
+                        <td>{{ vuelo.origen }} → {{ vuelo.destino }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha:</strong></td>
+                        <td>{{ vuelo.fecha_salida|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hora:</strong></td>
+                        <td>{{ vuelo.fecha_salida|date:"H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Avión:</strong></td>
+                        <td>{{ vuelo.avion.modelo }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Precio:</strong></td>
+                        <td><strong class="text-primary">${{ vuelo.precio_base }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

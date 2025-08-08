@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Reserva {{ reserva.codigo_reserva }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'lista_reservas' %}">Reservas</a></li>
+                <li class="breadcrumb-item active">{{ reserva.codigo_reserva }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4><i class="fas fa-ticket-alt"></i> Reserva Confirmada</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success" role="alert">
+                    <h5 class="alert-heading"><i class="fas fa-check-circle"></i> ¡Reserva Exitosa!</h5>
+                    <p>Tu reserva ha sido confirmada. Guarda este código para futuras consultas:</p>
+                    <hr>
+                    <h3 class="mb-0 text-center">
+                        <span class="badge bg-primary fs-4">{{ reserva.codigo_reserva }}</span>
+                    </h3>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-user"></i> Información del Pasajero</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Nombre:</strong></td>
+                                <td>{{ reserva.pasajero.nombre_completo }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Documento:</strong></td>
+                                <td>{{ reserva.pasajero.get_tipo_documento_display }}: {{ reserva.pasajero.documento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ reserva.pasajero.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Teléfono:</strong></td>
+                                <td>{{ reserva.pasajero.telefono }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-plane"></i> Información del Vuelo</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Ruta:</strong></td>
+                                <td>{{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_salida|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hora de Salida:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_salida|date:"H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Avión:</strong></td>
+                                <td>{{ reserva.vuelo.avion.modelo }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Asiento:</strong></td>
+                                <td><span class="badge bg-info">{{ reserva.asiento.numero }}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h5><i class="fas fa-receipt"></i> Información de la Reserva</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Código de Reserva:</strong></td>
+                                <td><span class="badge bg-primary">{{ reserva.codigo_reserva }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado:</strong></td>
+                                <td>
+                                    {% if reserva.estado == 'confirmada' %}
+                                        <span class="badge bg-success">{{ reserva.get_estado_display }}</span>
+                                    {% elif reserva.estado == 'cancelada' %}
+                                        <span class="badge bg-danger">{{ reserva.get_estado_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ reserva.get_estado_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha de Reserva:</strong></td>
+                                <td>{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Precio:</strong></td>
+                                <td><strong class="text-primary">${{ reserva.precio }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Método de Pago:</strong></td>
+                                <td>
+                                    {% if reserva.metodo_pago == 'tarjeta' %}
+                                        <span class="badge bg-info"><i class="fas fa-credit-card"></i> Tarjeta</span>
+                                    {% elif reserva.metodo_pago == 'efectivo' %}
+                                        <span class="badge bg-warning text-dark"><i class="fas fa-money-bill-wave"></i> Efectivo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if reserva.boleto %}
+                            <tr>
+                                <td><strong>Código de Boleto:</strong></td>
+                                <td><span class="badge bg-secondary">{{ reserva.boleto.codigo_barra }}</span></td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                        {% if reserva.estado in 'pendiente,confirmada' %}
+                            <a href="{% url 'cancelar_reserva' reserva.id %}" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Cancelar Reserva
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'lista_reservas' %}" class="btn btn-primary ms-2">
+                            <i class="fas fa-list"></i> Ver Mis Reservas
+                        </a>
+                        <button onclick="window.print()" class="btn btn-secondary ms-2">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información Importante</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-clock text-warning"></i> <strong>Check-in:</strong> 2 horas antes del vuelo</li>
+                    <li><i class="fas fa-id-card text-info"></i> <strong>Documentación:</strong> Presenta tu documento de identidad</li>
+                    <li><i class="fas fa-suitcase text-primary"></i> <strong>Equipaje:</strong> Consulta las políticas de equipaje</li>
+                    <li><i class="fas fa-mobile-alt text-success"></i> <strong>Código:</strong> Guarda tu código de reserva</li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if reserva.boleto %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-barcode"></i> Boleto Electrónico</h5>
+            </div>
+            <div class="card-body text-center">
+                <p><strong>Código de Boleto:</strong></p>
+                <div class="border p-3 mb-3" style="font-family: monospace; font-size: 18px; letter-spacing: 2px;">
+                    {{ reserva.boleto.codigo_barra }}
+                </div>
+                <small class="text-muted">Presenta este código en el aeropuerto</small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Reserva - Sistema de Gestión de Aerolíneas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-search"></i> Buscar Reserva</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5><i class="fas fa-ticket-alt"></i> Consultar Estado de Reserva</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="codigo_reserva" class="form-label">
+                            <i class="fas fa-barcode"></i> Código de Reserva
+                        </label>
+                        <input type="text" class="form-control form-control-lg text-center" 
+                               id="codigo_reserva" name="codigo_reserva" 
+                               placeholder="Ingresa tu código de reserva" 
+                               style="letter-spacing: 2px; font-family: monospace;"
+                               required>
+                        <div class="form-text">
+                            El código de reserva es una combinación de 6 letras y números (ej: ABC123)
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search"></i> Buscar Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if error %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if reserva %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h5><i class="fas fa-check-circle"></i> Reserva Encontrada</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user"></i> Información del Pasajero</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Nombre:</strong></td>
+                                    <td>{{ reserva.pasajero.nombre_completo }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Documento:</strong></td>
+                                    <td>{{ reserva.pasajero.get_tipo_documento_display }}: {{ reserva.pasajero.documento }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ reserva.pasajero.email }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-plane"></i> Información del Vuelo</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Ruta:</strong></td>
+                                    <td>{{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha:</strong></td>
+                                    <td>{{ reserva.vuelo.fecha_salida|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hora:</strong></td>
+                                    <td>{{ reserva.vuelo.fecha_salida|date:"H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Asiento:</strong></td>
+                                    <td><span class="badge bg-info">{{ reserva.asiento.numero }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h6><i class="fas fa-info-circle"></i> Estado de la Reserva</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Código:</strong></td>
+                                    <td><span class="badge bg-primary fs-6">{{ reserva.codigo_reserva }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td>
+                                        {% if reserva.estado == 'confirmada' %}
+                                            <span class="badge bg-success fs-6">{{ reserva.get_estado_display }}</span>
+                                        {% elif reserva.estado == 'cancelada' %}
+                                            <span class="badge bg-danger fs-6">{{ reserva.get_estado_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning fs-6">{{ reserva.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha de Reserva:</strong></td>
+                                    <td>{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Precio:</strong></td>
+                                    <td><strong class="text-primary">${{ reserva.precio }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'detalle_reserva' reserva.id %}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> Ver Detalles Completos
+                        </a>
+                        <button onclick="window.print()" class="btn btn-secondary ms-2">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

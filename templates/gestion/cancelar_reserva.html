@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancelar Reserva {{ reserva.codigo_reserva }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'detalle_reserva' reserva.id %}">Reserva {{ reserva.codigo_reserva }}</a></li>
+                <li class="breadcrumb-item active">Cancelar</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-exclamation-triangle"></i> Cancelar Reserva</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> ¡Atención!</h5>
+                    <p>Estás a punto de cancelar la siguiente reserva. Esta acción no se puede deshacer.</p>
+                </div>
+
+                <!-- Información de la Reserva -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-ticket-alt"></i> Información de la Reserva</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Código:</strong></td>
+                                <td><span class="badge bg-primary">{{ reserva.codigo_reserva }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado Actual:</strong></td>
+                                <td>
+                                    <span class="badge bg-success">{{ reserva.get_estado_display }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha de Reserva:</strong></td>
+                                <td>{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Precio:</strong></td>
+                                <td><strong class="text-primary">${{ reserva.precio }}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-plane"></i> Información del Vuelo</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Ruta:</strong></td>
+                                <td>{{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_salida|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hora:</strong></td>
+                                <td>{{ reserva.vuelo.fecha_salida|date:"H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Asiento:</strong></td>
+                                <td><span class="badge bg-info">{{ reserva.asiento.numero }}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-user"></i> Información del Pasajero</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Nombre:</strong></td>
+                                <td>{{ reserva.pasajero.nombre_completo }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Documento:</strong></td>
+                                <td>{{ reserva.pasajero.get_tipo_documento_display }}: {{ reserva.pasajero.documento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ reserva.pasajero.email }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!-- Formulario de Confirmación -->
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="text-center">
+                        <h6>¿Estás seguro de que deseas cancelar esta reserva?</h6>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-danger btn-lg me-3">
+                                <i class="fas fa-times"></i> Sí, Cancelar Reserva
+                            </button>
+                            <a href="{% url 'detalle_reserva' reserva.id %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> No, Volver
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

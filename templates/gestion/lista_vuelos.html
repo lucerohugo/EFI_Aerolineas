@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Vuelos - Sistema de Gestión de Aerolíneas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-plane-departure"></i> Lista de Vuelos</h2>
+        <hr>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-filter"></i> Filtros</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Origen</label>
+                        <select class="form-control" name="origen">
+                            <option value="">Todos los orígenes</option>
+                            {% for o in origenes %}
+                                <option value="{{ o }}" {% if origen_seleccionado == o %}selected{% endif %}>{{ o }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Destino</label>
+                        <select class="form-control" name="destino">
+                            <option value="">Todos los destinos</option>
+                            {% for d in destinos %}
+                                <option value="{{ d }}" {% if destino_seleccionado == d %}selected{% endif %}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" name="estado">
+                            <option value="">Todos los estados</option>
+                            {% for value, display in estados_vuelo %}
+                                <option value="{{ value }}" {% if request.GET.estado == value %}selected{% endif %}>
+                                    {{ display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        <a href="{% url 'lista_vuelos' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Vuelos -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list"></i> Vuelos ({{ vuelos.paginator.count }} total)</h5>
+                {% if user.is_staff %}
+                    <a href="/admin/gestion/vuelo/add/" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nuevo Vuelo
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if vuelos %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Ruta</th>
+                                    <th>Fecha/Hora Salida</th>
+                                    <th>Fecha/Hora Llegada</th>
+                                    <th>Avión</th>
+                                    <th>Precio</th>
+                                    <th>Disponibles</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vuelo in vuelos %}
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <i class="fas fa-plane-departure text-primary"></i>
+                                            {{ vuelo.origen }}
+                                        </strong>
+                                        <br>
+                                        <i class="fas fa-arrow-down text-muted"></i>
+                                        <br>
+                                        <strong>
+                                            <i class="fas fa-plane-arrival text-success"></i>
+                                            {{ vuelo.destino }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ vuelo.fecha_salida|date:"d/m/Y" }}</strong><br>
+                                        <small class="text-muted">{{ vuelo.fecha_salida|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ vuelo.fecha_llegada|date:"d/m/Y" }}</strong><br>
+                                        <small class="text-muted">{{ vuelo.fecha_llegada|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-plane text-info"></i>
+                                        {{ vuelo.avion.modelo }}
+                                        <br>
+                                        <small class="text-muted">{{ vuelo.avion.capacidad }} asientos</small>
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">${{ vuelo.precio_base }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ vuelo.asientos_disponibles }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">de {{ vuelo.avion.capacidad }}</small>
+                                    </td>
+                                    <td>
+                                        {% if vuelo.estado == 'programado' %}
+                                            <span class="badge bg-success">{{ vuelo.get_estado_display }}</span>
+                                        {% elif vuelo.estado == 'en_vuelo' %}
+                                            <span class="badge bg-warning">{{ vuelo.get_estado_display }}</span>
+                                        {% elif vuelo.estado == 'completado' %}
+                                            <span class="badge bg-primary">{{ vuelo.get_estado_display }}</span>
+                                        {% elif vuelo.estado == 'cancelado' %}
+                                            <span class="badge bg-danger">{{ vuelo.get_estado_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ vuelo.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm" role="group">
+                                            <!-- Acción 'Ver' eliminada -->
+                                            {% if user.is_authenticated and vuelo.asientos_disponibles > 0 and vuelo.estado == 'programado' %}
+                                                <a href="{% url 'crear_reserva' vuelo.id %}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-ticket-alt"></i> Reservar
+                                                </a>
+                                            {% endif %}
+                                            {% if user.is_staff %}
+                                                <a href="{% url 'reporte_pasajeros_vuelo' vuelo.id %}" 
+                                                   class="btn btn-outline-info btn-sm">
+                                                    <i class="fas fa-users"></i> Pasajeros
+                                                </a>
+                                                <a href="/admin/gestion/vuelo/{{ vuelo.id }}/change/" 
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if vuelos.has_other_pages %}
+                        <nav aria-label="Paginación de vuelos">
+                            <ul class="pagination justify-content-center">
+                                {% if vuelos.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if request.GET.origen %}&origen={{ request.GET.origen }}{% endif %}{% if request.GET.destino %}&destino={{ request.GET.destino }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ vuelos.previous_page_number }}{% if request.GET.origen %}&origen={{ request.GET.origen }}{% endif %}{% if request.GET.destino %}&destino={{ request.GET.destino }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Página {{ vuelos.number }} de {{ vuelos.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if vuelos.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ vuelos.next_page_number }}{% if request.GET.origen %}&origen={{ request.GET.origen }}{% endif %}{% if request.GET.destino %}&destino={{ request.GET.destino }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ vuelos.paginator.num_pages }}{% if request.GET.origen %}&origen={{ request.GET.origen }}{% endif %}{% if request.GET.destino %}&destino={{ request.GET.destino }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-plane fa-3x text-muted mb-3"></i>
+                        <h5>No se encontraron vuelos</h5>
+                        <p class="text-muted">
+                            {% if request.GET.origen or request.GET.destino or request.GET.estado %}
+                                No hay vuelos que coincidan con los filtros aplicados.
+                            {% else %}
+                                No hay vuelos registrados en el sistema.
+                            {% endif %}
+                        </p>
+                        {% if user.is_staff %}
+                            <a href="/admin/gestion/vuelo/add/" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primer Vuelo
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

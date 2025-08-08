@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Inicio" %} - Sistema de Gestión de Aerolíneas{% endblock %}
+
+{% block content %}
+
+<div class="hero-jumbotron bg-primary text-white pt-4 pb-5 mb-4" style="width:100vw; margin-left:calc(-50vw + 50%); border-radius:0; margin-top:-2rem;">
+    <div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 320px;">
+        <div class="airplane-banner-container mb-3 d-flex justify-content-center align-items-center w-100" style="min-height:7rem;">
+            <div class="airplane-banner-animation mx-auto">
+                <div class="airplane">
+                    <i class="bi bi-airplane-fill" style="font-size: 3.5rem;"></i>
+                </div>
+                <div class="banner">
+                    <span class="display-4">{% trans "Bienvenido a AeroEFI" %}</span>
+                </div>
+            </div>
+        </div>
+        <p class="lead">{% trans "Sistema de gestión de aerolíneas" %}</p>
+        <p>{% trans "Gestiona vuelos, reservas y pasajeros de manera eficiente" %}</p>
+        <a class="btn btn-light btn-lg mt-2" href="{% url 'buscar_vuelos' %}" role="button">
+            <i class="fas fa-search"></i> {% trans "Buscar Vuelos" %}
+        </a>
+    </div>
+</div>
+
+<style>
+    .row.mb-4.g-3 > .col-md-3,
+    .row.mb-4 > .col-md-3 {
+        display: flex;
+    }
+    .card-stats {
+        border-radius: 1.5rem !important;
+        min-height: 140px;
+        box-shadow: 0 2px 12px 0 #003b7a11;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+    .hero-jumbotron {
+        min-height: 340px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0;
+        box-shadow: none;
+        padding-top: 3.5rem;
+        padding-bottom: 3.5rem;
+    }
+    .airplane-banner-container {
+        width: 100%;
+        overflow: visible;
+        position: relative;
+        height: 7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .airplane-banner-animation {
+        display: flex;
+        align-items: center;
+        position: relative;
+        left: 0;
+        margin: 0 auto;
+        animation: fly-across 3.5s cubic-bezier(0.4,0.2,0.2,1) 1;
+        animation-fill-mode: forwards;
+    }
+    @keyframes fly-across {
+        0% { left: -600px; }
+        100% { left: 0; }
+    }
+    .airplane {
+        margin-right: 1.5rem;
+        color: #fff;
+        filter: drop-shadow(2px 2px 6px #003b7a88);
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .banner {
+        background: #fff;
+        color: #2563eb;
+        border-radius: 1.5rem;
+        padding: 0.5rem 2.5rem;
+        box-shadow: 0 2px 12px 0 #003b7a22;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        min-width: 350px;
+        min-height: 3.5rem;
+        font-size: 2.5rem;
+        border: 2px solid #2563eb;
+        z-index: 1;
+        justify-content: center;
+    }
+</style>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stats text-center">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Total Vuelos" %}</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ total_vuelos }}</span>
+                    </div>
+                    <div class="col-auto">
+                    <div class="icon icon-shape bg-primary text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                            <i class="bi bi-airplane" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card card-stats text-center">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Pasajeros" %}</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ total_pasajeros }}</span>
+                    </div>
+                    <div class="col-auto">
+                    <div class="icon icon-shape bg-success text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                            <i class="bi bi-people-fill" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card card-stats text-center">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Reservas" %}</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ total_reservas }}</span>
+                    </div>
+                    <div class="col-auto">
+                    <div class="icon icon-shape bg-warning text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                            <i class="bi bi-ticket-perforated" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card card-stats text-center">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Próximos Vuelos" %}</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ vuelos_proximos|length }}</span>
+                    </div>
+                    <div class="col-auto">
+                    <div class="icon icon-shape bg-info text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                            <i class="bi bi-calendar2-date" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row mb-4 g-3">
+    <div class="col-12">
+        <h3><i class="fas fa-bolt"></i> {% trans "Acciones Rápidas" %}</h3>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">{% trans "Buscar Vuelos" %}</h5>
+                <p class="card-text">Encuentra vuelos disponibles por origen, destino y fecha.</p>
+                <a href="{% url 'buscar_vuelos' %}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> {% trans "Buscar" %}
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-ticket-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">{% trans "Buscar Reserva" %}</h5>
+                <p class="card-text">Consulta el estado de tu reserva usando el código.</p>
+                <a href="{% url 'buscar_reserva' %}" class="btn btn-success">
+                    <i class="fas fa-search"></i> Consultar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-list fa-3x text-info mb-3"></i>
+                <h5 class="card-title">{% trans "Ver Vuelos" %}</h5>
+                <p class="card-text">Explora todos los vuelos disponibles en el sistema.</p>
+                <a href="{% url 'lista_vuelos' %}" class="btn btn-info">
+                    <i class="fas fa-list"></i> {% trans "Ver Todos" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vuelos Próximos -->
+{% if vuelos_proximos %}
+<div class="row">
+    <div class="col-12">
+        <h3><i class="fas fa-clock"></i> {% trans "Próximos Vuelos" %}</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{% trans "Origen" %}</th>
+                        <th>{% trans "Destino" %}</th>
+                        <th>Fecha/Hora</th>
+                        <th>{% trans "Avión" %}</th>
+                        <th>{% trans "Disponibles" %}</th>
+                        <th>{% trans "Estado" %}</th>
+                        <th>{% trans "Acciones" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vuelo in vuelos_proximos %}
+                    <tr>
+                        <td>
+                            <i class="fas fa-plane-departure text-primary"></i>
+                            {{ vuelo.origen }}
+                        </td>
+                        <td>
+                            <i class="fas fa-plane-arrival text-success"></i>
+                            {{ vuelo.destino }}
+                        </td>
+                        <td>{{ vuelo.fecha_salida|date:"d/m/Y H:i" }}</td>
+                        <td>{{ vuelo.avion.modelo }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ vuelo.asientos_disponibles }} / {{ vuelo.avion.capacidad }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ vuelo.get_estado_display }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group-vertical btn-group-sm" role="group">
+                                {% if user.is_authenticated and vuelo.asientos_disponibles > 0 and vuelo.estado == 'programado' %}
+                                    <a href="{% url 'crear_reserva' vuelo.id %}" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-ticket-alt"></i> Reservar
+                                    </a>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                    <a href="{% url 'reporte_pasajeros_vuelo' vuelo.id %}" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-users"></i> Pasajeros
+                                    </a>
+                                    <a href="/admin/gestion/vuelo/{{ vuelo.id }}/change/" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

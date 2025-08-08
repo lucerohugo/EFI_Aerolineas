@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Vuelos - Sistema de Gestión de Aerolíneas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-search"></i> Buscar Vuelos</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-filter"></i> Filtros de Búsqueda</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="form-buscar-vuelos">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.origen.id_for_label }}" class="form-label">
+                            <i class="fas fa-plane-departure"></i> Origen
+                        </label>
+                        {{ form.origen }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.destino.id_for_label }}" class="form-label">
+                            <i class="fas fa-plane-arrival"></i> Destino
+                        </label>
+                        {{ form.destino }}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.fecha_salida.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar"></i> Fecha de Salida
+                            </label>
+                            {{ form.fecha_salida }}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form-buscar-vuelos');
+        const origen = form.querySelector('[name="origen"]');
+        const destino = form.querySelector('[name="destino"]');
+        if (origen && destino) {
+            origen.addEventListener('change', function() {
+                form.querySelector('[name="fecha_salida"]').selectedIndex = 0;
+                form.submit();
+            });
+            destino.addEventListener('change', function() {
+                form.querySelector('[name="fecha_salida"]').selectedIndex = 0;
+                form.submit();
+            });
+        }
+    });
+</script>
+{% endblock %}
+                        <i class="fas fa-search"></i> Buscar Vuelos
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        {% if vuelos %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Resultados de Búsqueda ({{ vuelos|length }} vuelo{{ vuelos|length|pluralize }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for vuelo in vuelos %}
+                        <div class="card flight-card mb-3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h5 class="card-title mb-1">
+                                            <i class="fas fa-plane text-primary"></i>
+                                            {{ vuelo.origen }} → {{ vuelo.destino }}
+                                        </h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-calendar"></i> {{ vuelo.fecha_salida|date:"d/m/Y" }}
+                                            <i class="fas fa-clock ms-2"></i> {{ vuelo.fecha_salida|date:"H:i" }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Avión:</strong> {{ vuelo.avion.modelo }}
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Duración:</strong> {{ vuelo.duracion }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="col-md-3 text-center">
+                                        <h4 class="text-primary mb-1">${{ vuelo.precio_base }}</h4>
+                                        <p class="mb-1">
+                                            <span class="badge bg-info">
+                                                {{ vuelo.asientos_disponibles }} disponibles
+                                            </span>
+                                        </p>
+                                        <small class="text-muted">de {{ vuelo.avion.capacidad }} asientos</small>
+                                    </div>
+                                    
+                                    <div class="col-md-3 text-end">
+                                        {% if user.is_authenticated and vuelo.asientos_disponibles > 0 %}
+                                            <a href="{% url 'crear_reserva' vuelo.id %}" class="btn btn-success w-100">
+                                                <i class="fas fa-ticket-alt"></i> Reservar
+                                            </a>
+                                        {% elif not user.is_authenticated %}
+                                            <a href="{% url 'login' %}" class="btn btn-warning w-100">
+                                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-secondary w-100" disabled>
+                                                <i class="fas fa-times"></i> Sin Disponibilidad
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No se encontraron vuelos</h5>
+                    <p class="text-muted">
+                        {% if request.method == 'POST' %}
+                            No hay vuelos disponibles para los criterios de búsqueda especificados.
+                        {% else %}
+                            Utiliza el formulario de la izquierda para buscar vuelos disponibles.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

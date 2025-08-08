@@ -1,0 +1,5 @@
+Django==4.2.7
+Pillow==10.1.0
+
+# Para traducción
+django-rosetta==0.9.9
