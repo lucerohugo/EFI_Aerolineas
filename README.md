@@ -53,6 +53,17 @@ AeroEFI es una aplicación web desarrollada en Django para la gestión integral 
 
 ## Créditos
 Desarrollado por Cugiani, Lucero y Perotti 
+2025-Global navigation
+￼
+Home
+Issues
+Pull requests
+Projects
+Discussions
+Codespaces
+Copilot
+Explore
+Marketplace--
 
 ---
 
