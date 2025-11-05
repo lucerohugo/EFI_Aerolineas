@@ -3,3 +3,6 @@ Pillow==10.1.0
 
 # Para traducción
 django-rosetta==0.9.9
+
+# Para generación de PDFs nativos
+reportlab==4.4.4

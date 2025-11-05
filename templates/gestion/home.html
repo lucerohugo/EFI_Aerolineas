@@ -24,7 +24,8 @@
 
 <style>
     .row.mb-4.g-3 > .col-md-3,
-    .row.mb-4 > .col-md-3 {
+    .row.mb-4 > .col-md-3,
+    .row.mb-4 > .col-md-6 {
         display: flex;
     }
     .card-stats {
@@ -96,79 +97,121 @@
 </style>
 
 <!-- Estadísticas -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card card-stats text-center">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Total Vuelos" %}</h5>
-                        <span class="h2 font-weight-bold mb-0">{{ total_vuelos }}</span>
+{% if user.is_authenticated and user.is_staff %}
+    <!-- Vista completa para administradores -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Total Vuelos" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_vuelos }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-primary text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-airplane" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                    <div class="icon icon-shape bg-primary text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="bi bi-airplane" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Pasajeros" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_pasajeros }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-success text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-people-fill" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Reservas" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_reservas }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-warning text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-ticket-perforated" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Próximos Vuelos" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ vuelos_proximos|length }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-info text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-calendar2-date" style="font-size: 2.5rem;"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card card-stats text-center">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Pasajeros" %}</h5>
-                        <span class="h2 font-weight-bold mb-0">{{ total_pasajeros }}</span>
+{% else %}
+    <!-- Vista limitada para usuarios regulares y no autenticados -->
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Total Vuelos" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_vuelos }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-primary text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-airplane" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                    <div class="icon icon-shape bg-success text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="bi bi-people-fill" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card card-stats text-center">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Próximos Vuelos" %}</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ vuelos_proximos|length }}</span>
+                        </div>
+                        <div class="col-auto">
+                        <div class="icon icon-shape bg-info text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <i class="bi bi-calendar2-date" style="font-size: 2.5rem;"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card card-stats text-center">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Reservas" %}</h5>
-                        <span class="h2 font-weight-bold mb-0">{{ total_reservas }}</span>
-                    </div>
-                    <div class="col-auto">
-                    <div class="icon icon-shape bg-warning text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="bi bi-ticket-perforated" style="font-size: 2.5rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card card-stats text-center">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 class="card-title text-uppercase text-muted mb-0">{% trans "Próximos Vuelos" %}</h5>
-                        <span class="h2 font-weight-bold mb-0">{{ vuelos_proximos|length }}</span>
-                    </div>
-                    <div class="col-auto">
-                    <div class="icon icon-shape bg-info text-white shadow" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="bi bi-calendar2-date" style="font-size: 2.5rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% endif %}
 
 <!-- Acciones Rápidas -->
 <div class="row mb-4 g-3">

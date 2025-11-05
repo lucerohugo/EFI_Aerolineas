@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Boleto Electrónico - {{ reserva.codigo_reserva }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm 1.5cm;
+            @top-center {
+                content: "AEROÉFI - Sistema de Gestión Aerolíneas";
+                font-size: 10px;
+                color: #666;
+            }
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9px;
+                color: #999;
+            }
+        }
+        
+        body { 
+            font-family: "Helvetica", Arial, sans-serif; 
+            font-size: 11px; 
+            color: #222; 
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .document-header {
+            text-align: center;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e40af;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .document-type {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+            text-transform: uppercase;
+        }
+        
+        .reservation-code {
+            font-size: 16px;
+            font-weight: bold;
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 8px 15px;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e40af;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 3px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .info-row {
+            display: table-row;
+        }
+        
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            font-weight: 600;
+            color: #374151;
+            padding: 6px 8px 6px 0;
+            vertical-align: top;
+        }
+        
+        .info-value {
+            display: table-cell;
+            width: 65%;
+            padding: 6px 0;
+            vertical-align: top;
+            color: #111827;
+        }
+        
+        .highlight-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .flight-route {
+            font-size: 14px;
+            font-weight: bold;
+            color: #059669;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .seat-info {
+            background: #1e40af;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .price-info {
+            font-size: 14px;
+            font-weight: bold;
+            color: #dc2626;
+        }
+        
+        .status-active {
+            background: #10b981;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        .footer-section {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #d1d5db;
+            font-size: 10px;
+            color: #6b7280;
+            text-align: center;
+        }
+        
+        .barcode-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px dashed #9ca3af;
+        }
+        
+        .barcode-text {
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #111827;
+            margin-top: 8px;
+        }
+        
+        .two-column {
+            display: table;
+            width: 100%;
+        }
+        
+        .column {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding-right: 15px;
+        }
+        
+        .column:last-child {
+            padding-right: 0;
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="document-header">
+        <h1 class="company-name">AEROÉFI</h1>
+        <div class="document-type">Boleto Electrónico / E-Ticket</div>
+        <div class="reservation-code">{{ reserva.codigo_reserva }}</div>
+    </div>
+
+    <div class="highlight-box">
+        <div class="flight-route">{{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</div>
+        <div style="text-align: center; margin-top: 8px;">
+            <strong>{{ reserva.vuelo.fecha_salida|date:"l, d \d\e F \d\e Y" }} - {{ reserva.vuelo.fecha_salida|date:"H:i" }} hs</strong>
+        </div>
+    </div>
+
+    <div class="two-column">
+        <div class="column">
+            <div class="info-section">
+                <div class="section-title">Información del Pasajero</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-label">Nombre completo:</div>
+                        <div class="info-value">{{ reserva.pasajero.nombre_completo }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Documento:</div>
+                        <div class="info-value">{{ reserva.pasajero.get_tipo_documento_display }}: {{ reserva.pasajero.documento }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value">{{ reserva.pasajero.email }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Teléfono:</div>
+                        <div class="info-value">{{ reserva.pasajero.telefono|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="info-section">
+                <div class="section-title">Detalles del Vuelo</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-label">Número de vuelo:</div>
+                        <div class="info-value">{{ reserva.vuelo.numero_vuelo|default:"N/A" }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Aeronave:</div>
+                        <div class="info-value">{{ reserva.vuelo.avion.modelo }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Asiento asignado:</div>
+                        <div class="info-value"><span class="seat-info">{{ reserva.asiento.numero }}</span></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Clase:</div>
+                        <div class="info-value">{{ reserva.asiento.get_clase_display|default:"Económica" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="section-title">Información de la Reserva</div>
+        <div class="info-grid">
+            <div class="info-row">
+                <div class="info-label">Código de reserva:</div>
+                <div class="info-value"><strong>{{ reserva.codigo_reserva }}</strong></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Estado:</div>
+                <div class="info-value">
+                    {% if reserva.estado == 'confirmada' or reserva.estado == 'pagada' %}
+                        <span class="status-active">{{ reserva.get_estado_display }}</span>
+                    {% else %}
+                        {{ reserva.get_estado_display }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Fecha de emisión:</div>
+                <div class="info-value">{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Tarifa:</div>
+                <div class="info-value"><span class="price-info">${{ reserva.precio }}</span></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Forma de pago:</div>
+                <div class="info-value">
+                    {% if reserva.metodo_pago == 'tarjeta' %}
+                        Tarjeta de crédito/débito
+                    {% elif reserva.metodo_pago == 'efectivo' %}
+                        Efectivo
+                    {% else %}
+                        No especificado
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if reserva.boleto %}
+    <div class="barcode-section">
+        <div style="font-weight: bold; margin-bottom: 5px;">CÓDIGO DE BOLETO</div>
+        <div class="barcode-text">{{ reserva.boleto.codigo_barra }}</div>
+        <div style="font-size: 9px; color: #666; margin-top: 8px;">
+            Presente este código en el mostrador de check-in
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="footer-section">
+        <p><strong>INSTRUCCIONES IMPORTANTES:</strong></p>
+        <p>• Llegue al aeropuerto 2 horas antes para vuelos nacionales y 3 horas para internacionales</p>
+        <p>• Presente documento de identidad válido y este boleto electrónico</p>
+        <p>• Check-in disponible 24 horas antes del vuelo</p>
+        <p>• Para cambios o cancelaciones, contacte a AeroÉFI o visite nuestro sitio web</p>
+        <br>
+        <p style="border-top: 1px solid #ddd; padding-top: 10px;">
+            <strong>AeroÉFI</strong> - Sistema de Gestión de Aerolíneas<br>
+            Documento generado el {{ "now"|date:"d/m/Y H:i" }}
+        </p>
+    </div>
+</body>
+</html>

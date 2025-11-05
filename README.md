@@ -52,6 +52,12 @@ AeroEFI es una aplicación web desarrollada en Django para la gestión integral 
 - `python manage.py runserver` — Iniciar servidor local
 
 ## Créditos
+<<<<<<< HEAD
 Desarrollado por Cugiani, Lucero y Perotti 
 2025
+=======
+Desarrollado por Lucero y Perotti 
+
+---
+>>>>>>> 317f0e2 (EFI casi terminada, puliendo cosas del FRONT/ 5/11/25)
 

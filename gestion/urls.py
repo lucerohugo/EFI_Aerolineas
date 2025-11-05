@@ -15,6 +15,7 @@ urlpatterns = [
     path('reservas/', views.lista_reservas, name='lista_reservas'),
     path('reservas/buscar/', views.buscar_reserva, name='buscar_reserva'),
     path('reservas/<int:reserva_id>/', views.detalle_reserva, name='detalle_reserva'),
+    path('reservas/<int:reserva_id>/pdf/', views.reserva_pdf, name='reserva_pdf'),
     path('reservas/<int:reserva_id>/cancelar/', views.cancelar_reserva, name='cancelar_reserva'),
     path('vuelos/<int:vuelo_id>/reservar/', views.crear_reserva, name='crear_reserva'),
     path('pasajeros/', views.lista_pasajeros, name='lista_pasajeros'),

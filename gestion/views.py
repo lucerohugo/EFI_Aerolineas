@@ -62,6 +62,22 @@ from django.utils import timezone
 from datetime import datetime, date
 from .models import Vuelo, Pasajero, Reserva, Asiento, Boleto
 from .forms import PasajeroForm, ReservaForm, BusquedaVueloForm
+from django.http import HttpResponse, HttpResponseForbidden
+from django.template.loader import render_to_string
+
+# Importamos reportlab para generar PDFs nativos
+try:
+    from reportlab.lib.pagesizes import A4, letter
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.platypus.frames import Frame
+    from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    reportlab_available = True
+except Exception:
+    reportlab_available = False
 
 def home(request):
     """Vista principal del sistema"""
@@ -245,7 +261,7 @@ def crear_reserva(request, vuelo_id):
                 reserva.vuelo = vuelo
                 reserva.pasajero = pasajero
                 reserva.precio = vuelo.precio_base
-                reserva.usuario = request.user
+                reserva.usuario = request.user if request.user.is_authenticated else None
                 reserva.estado = 'confirmada'
                 reserva.asiento = asiento
                 reserva.save()
@@ -260,7 +276,17 @@ def crear_reserva(request, vuelo_id):
                 messages.error(request, 'Debe seleccionar un asiento.')
                 return redirect('crear_reserva', vuelo_id=vuelo.id)
     else:
-        pasajero_form = PasajeroForm()
+        # Precompletar datos si el usuario está autenticado
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data = {
+                'nombre': request.user.first_name,
+                'apellido': request.user.last_name,
+                'email': request.user.email,
+            }
+        
+        pasajero_form = PasajeroForm(initial=initial_data)
+        
         if asiento_id_preseleccionado:
             reserva_form = ReservaForm(vuelo_id=vuelo_id, initial={'asiento': asiento_id_preseleccionado})
             reserva_form.fields['asiento'].widget.attrs['readonly'] = True
@@ -295,6 +321,253 @@ def detalle_reserva(request, reserva_id):
         'reserva': reserva,
     }
     return render(request, 'gestion/detalle_reserva.html', context)
+
+
+def reserva_pdf(request, reserva_id):
+    """Genera un PDF con los datos de la reserva usando reportlab.
+
+    Permisos: si el usuario es staff puede ver cualquier reserva; si no, solo su propia reserva.
+    """
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    # Permisos
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden('Debe iniciar sesión para descargar el PDF de la reserva.')
+    if not request.user.is_staff and reserva.usuario != request.user:
+        return HttpResponseForbidden('No tienes permiso para descargar el PDF de esta reserva.')
+
+    if not reportlab_available:
+        return HttpResponse('La librería reportlab no está instalada. Instala `reportlab` y reinicia el servidor.', status=500)
+
+    # Crear la respuesta HTTP para el PDF
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"reserva_{reserva.codigo_reserva}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(response, pagesize=A4, 
+                          rightMargin=2*cm, leftMargin=2*cm,
+                          topMargin=2*cm, bottomMargin=2*cm)
+
+    # Obtener estilos
+    styles = getSampleStyleSheet()
+    
+    # Crear estilos personalizados
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#1e40af')
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=12,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#666666')
+    )
+    
+    section_style = ParagraphStyle(
+        'SectionTitle',
+        parent=styles['Heading3'],
+        fontSize=12,
+        spaceAfter=8,
+        spaceBefore=16,
+        textColor=colors.HexColor('#1e40af'),
+        borderWidth=1,
+        borderColor=colors.HexColor('#e5e7eb'),
+        borderPadding=5
+    )
+
+    # Contenido del PDF
+    story = []
+
+    # Encabezado
+    story.append(Paragraph("AEROÉFI", title_style))
+    story.append(Paragraph("Boleto Electrónico / E-Ticket", subtitle_style))
+    story.append(Spacer(1, 12))
+    
+    # Código de reserva destacado
+    codigo_style = ParagraphStyle(
+        'CodigoReserva',
+        parent=styles['Normal'],
+        fontSize=16,
+        alignment=TA_CENTER,
+        textColor=colors.white,
+        backColor=colors.HexColor('#dc2626'),
+        borderWidth=1,
+        borderColor=colors.HexColor('#fecaca'),
+        borderPadding=10
+    )
+    story.append(Paragraph(f"<b>CÓDIGO DE RESERVA: {reserva.codigo_reserva}</b>", codigo_style))
+    story.append(Spacer(1, 20))
+
+    # Información del vuelo destacada
+    ruta_style = ParagraphStyle(
+        'RutaVuelo',
+        parent=styles['Normal'],
+        fontSize=16,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#059669'),
+        spaceAfter=12
+    )
+    story.append(Paragraph(f"<b>{reserva.vuelo.origen} → {reserva.vuelo.destino}</b>", ruta_style))
+    
+    # Formatear fecha en español
+    meses = {
+        1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+        5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+        9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+    }
+    
+    dias = {
+        0: 'lunes', 1: 'martes', 2: 'miércoles', 3: 'jueves',
+        4: 'viernes', 5: 'sábado', 6: 'domingo'
+    }
+    
+    fecha_obj = reserva.vuelo.fecha_salida
+    dia_semana = dias[fecha_obj.weekday()]
+    mes_nombre = meses[fecha_obj.month]
+    fecha_vuelo = f"{dia_semana.capitalize()}, {fecha_obj.day} de {mes_nombre} de {fecha_obj.year} - {fecha_obj.strftime('%H:%M')} hs"
+    
+    story.append(Paragraph(f"<b>{fecha_vuelo}</b>", ParagraphStyle('FechaVuelo', parent=styles['Normal'], fontSize=12, alignment=TA_CENTER)))
+    story.append(Spacer(1, 20))
+
+    # Información del pasajero
+    story.append(Paragraph("INFORMACIÓN DEL PASAJERO", section_style))
+    
+    pasajero_data = [
+        ['Nombre completo:', f"{reserva.pasajero.nombre} {reserva.pasajero.apellido}"],
+        ['Documento:', f"{reserva.pasajero.get_tipo_documento_display()}: {reserva.pasajero.documento}"],
+        ['Email:', reserva.pasajero.email],
+        ['Teléfono:', reserva.pasajero.telefono or '-'],
+    ]
+    
+    pasajero_table = Table(pasajero_data, colWidths=[4*cm, 10*cm])
+    pasajero_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(pasajero_table)
+    story.append(Spacer(1, 20))
+
+    # Información del vuelo
+    story.append(Paragraph("DETALLES DEL VUELO", section_style))
+    
+    vuelo_data = [
+        ['Aeronave:', reserva.vuelo.avion.modelo],
+        ['Asiento asignado:', f"**{reserva.asiento.numero}**"],
+        ['Clase:', getattr(reserva.asiento, 'get_clase_display', lambda: 'Económica')() or 'Económica'],
+    ]
+    
+    vuelo_table = Table(vuelo_data, colWidths=[4*cm, 10*cm])
+    vuelo_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(vuelo_table)
+    story.append(Spacer(1, 20))
+
+    # Información de la reserva
+    story.append(Paragraph("INFORMACIÓN DE LA RESERVA", section_style))
+    
+    metodo_pago = 'No especificado'
+    if reserva.metodo_pago == 'tarjeta':
+        metodo_pago = 'Tarjeta de crédito/débito'
+    elif reserva.metodo_pago == 'efectivo':
+        metodo_pago = 'Efectivo'
+    
+    reserva_data = [
+        ['Estado:', reserva.get_estado_display()],
+        ['Fecha de emisión:', reserva.fecha_reserva.strftime("%d/%m/%Y %H:%M")],
+        ['Tarifa:', f"${reserva.precio}"],
+        ['Forma de pago:', metodo_pago],
+    ]
+    
+    reserva_table = Table(reserva_data, colWidths=[4*cm, 10*cm])
+    reserva_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(reserva_table)
+    story.append(Spacer(1, 20))
+
+    # Código de boleto si existe
+    if hasattr(reserva, 'boleto') and reserva.boleto:
+        story.append(Paragraph("CÓDIGO DE BOLETO", section_style))
+        
+        boleto_style = ParagraphStyle(
+            'CodigoBoleto',
+            parent=styles['Normal'],
+            fontSize=14,
+            alignment=TA_CENTER,
+            fontName='Courier-Bold',
+            textColor=colors.black,
+            backColor=colors.HexColor('#f9fafb'),
+            borderWidth=1,
+            borderColor=colors.HexColor('#9ca3af'),
+            borderPadding=10,
+            spaceAfter=8
+        )
+        story.append(Paragraph(f"{reserva.boleto.codigo_barra}", boleto_style))
+        story.append(Paragraph("Presente este código en el mostrador de check-in", 
+                             ParagraphStyle('BoletoInstr', parent=styles['Normal'], fontSize=9, 
+                                          alignment=TA_CENTER, textColor=colors.HexColor('#666666'))))
+        story.append(Spacer(1, 20))
+
+    story.append(Spacer(1, 30))
+    
+    # Pie de página
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#6b7280'),
+        borderWidth=1,
+        borderColor=colors.HexColor('#d1d5db'),
+        borderPadding=8
+    )
+    
+    from datetime import datetime
+    ahora = datetime.now().strftime("%d/%m/%Y %H:%M")
+    
+    story.append(Paragraph(f"<b>AeroÉFI</b> - Sistema de Gestión de Aerolíneas<br/>Documento generado el {ahora}", footer_style))
+
+    # Construir el PDF
+    doc.build(story)
+    return response
 
 def lista_vuelos(request):
     """Vista para listar todos los vuelos"""
