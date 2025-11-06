@@ -1,4 +1,5 @@
 # AeroEFI API REST - Documentación
+# Parte 2
 
 ## Descripción
 
@@ -353,4 +354,4 @@ MIT License - Ver archivo LICENSE para más detalles.
 
 ---
 
-**Desarrollado con ❤️ usando Django Rest Framework**
+**Desarrollado con ❤️ usando Django Rest Framework por Lucero/Cugiani/Perotti**
