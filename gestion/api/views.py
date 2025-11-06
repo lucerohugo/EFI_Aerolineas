@@ -1,9 +1,4 @@
-"""
-ViewSets para la API REST de AeroEFI
 
-Este módulo contiene todas las vistas (ViewSets) que exponen la funcionalidad
-de la aplicación a través de endpoints REST.
-"""
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,43 +20,29 @@ from .permissions import (
     IsAdminOrReadOnly, IsOwnerOrAdminReservation, IsAdminOnly,
     CanViewPasajero, CanManageVuelos, CanAccessReports
 )
-from .exceptions import BusinessLogicError, ResourceNotFoundError
+
 
 
 class VueloViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para gestión de vuelos
-    
-    Funcionalidades:
-    - Listar todos los vuelos disponibles
-    - Obtener detalle de un vuelo específico  
-    - Filtrar vuelos por origen, destino y fecha
-    - Crear, editar y eliminar vuelos (solo administradores)
-    """
-    
     queryset = Vuelo.objects.all().select_related('avion')
     serializer_class = VueloSerializer
     permission_classes = [CanManageVuelos]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['origen', 'destino', 'estado', 'avion']
-    search_fields = ['numero_vuelo', 'origen', 'destino']
+    search_fields = ['origen', 'destino']
     ordering_fields = ['fecha_salida', 'precio_base', 'origen', 'destino']
     ordering = ['fecha_salida']
     
     def get_queryset(self):
-        """Filtrado personalizado de vuelos"""
         queryset = super().get_queryset()
-        
-        # Filtro por fecha de salida
         fecha_salida = self.request.query_params.get('fecha_salida')
         if fecha_salida:
             try:
                 fecha = datetime.strptime(fecha_salida, '%Y-%m-%d').date()
                 queryset = queryset.filter(fecha_salida__date=fecha)
             except ValueError:
-                pass  # Ignorar formato de fecha inválido
+                pass
         
-        # Filtro por rango de fechas
         fecha_desde = self.request.query_params.get('fecha_desde')
         fecha_hasta = self.request.query_params.get('fecha_hasta')
         
@@ -79,35 +60,26 @@ class VueloViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
         
-        # Filtro para mostrar solo vuelos futuros (por defecto)
-        solo_futuros = self.request.query_params.get('solo_futuros', 'true')
-        if solo_futuros.lower() == 'true':
+                solo_futuros = self.request.query_params.get('solo_futuros', 'true').lower() == 'true'
             queryset = queryset.filter(fecha_salida__gte=timezone.now())
         
         return queryset
     
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def asientos(self, request, pk=None):
-        """Obtiene el mapa de asientos de un vuelo específico"""
         vuelo = self.get_object()
-        
-        # Obtener asientos del avión
         asientos = vuelo.avion.asientos.all().order_by('fila', 'columna')
-        
-        # Obtener reservas confirmadas para este vuelo
         reservas_confirmadas = Reserva.objects.filter(
             vuelo=vuelo,
             estado__in=['confirmada', 'pagada']
         ).values_list('asiento_id', flat=True)
         
-        # Preparar datos de asientos con estado de disponibilidad
         asientos_data = []
         for asiento in asientos:
             asiento_info = AsientoSerializer(asiento).data
             asiento_info['reservado'] = asiento.id in reservas_confirmadas
             asientos_data.append(asiento_info)
         
-        # Organizar por filas
         asientos_por_fila = {}
         for asiento in asientos_data:
             fila = asiento['fila']
@@ -124,7 +96,6 @@ class VueloViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def buscar(self, request):
-        """Búsqueda avanzada de vuelos con múltiples criterios"""
         origen = request.query_params.get('origen')
         destino = request.query_params.get('destino')
         fecha_salida = request.query_params.get('fecha_salida')

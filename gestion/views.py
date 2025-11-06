@@ -1,7 +1,32 @@
-from django.contrib.auth import authenticate, login as auth_login
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_protect
+from django.http import HttpResponse, HttpResponseForbidden
+from django.template.loader import render_to_string
+from datetime import datetime, date
+from .models import Vuelo, Pasajero, Reserva, Asiento, Boleto
+from .forms import PasajeroForm, ReservaForm, BusquedaVueloForm
+
+try:
+    from reportlab.lib.pagesizes import A4, letter
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.platypus.frames import Frame
+    from reportlab.platypus.doctemplate import PageTemplate, BaseDocTemplate
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    reportlab_available = True
+except Exception:
+    reportlab_available = False
+
 def login_view(request):
-    from django.contrib.auth.forms import AuthenticationForm
     login_form = AuthenticationForm(request, data=request.POST or None)
     if request.method == 'POST' and 'username' in request.POST:
         if login_form.is_valid():
@@ -10,7 +35,6 @@ def login_view(request):
             return redirect('home')
     return render(request, 'registration/login.html', {'form': login_form})
 
-from django.views.decorators.csrf import csrf_protect
 @csrf_protect
 def registro_view(request):
     registro_errores = []
@@ -22,7 +46,7 @@ def registro_view(request):
         email = request.POST.get('reg_email', '').strip()
         password1 = request.POST.get('reg_password1', '')
         password2 = request.POST.get('reg_password2', '')
-        # Validaciones básicas
+        
         if not all([first_name, last_name, username, email, password1, password2]):
             registro_errores.append('Todos los campos son obligatorios.')
         if password1 != password2:
@@ -42,30 +66,15 @@ def registro_view(request):
             user.is_staff = False
             user.is_superuser = False
             user.save()
-            # Login automático y redirección
-            from django.contrib.auth import login as auth_login
             auth_login(request, user)
-            from django.contrib import messages
             messages.success(request, '¡Usuario creado exitosamente! Bienvenido/a.')
-            from django.shortcuts import redirect
             return redirect('home')
     return render(request, 'registration/registro.html', {
         'registro_errores': registro_errores,
         'registro_exito': registro_exito,
     })
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.paginator import Paginator
-from django.utils import timezone
-from datetime import datetime, date
-from .models import Vuelo, Pasajero, Reserva, Asiento, Boleto
-from .forms import PasajeroForm, ReservaForm, BusquedaVueloForm
-from django.http import HttpResponse, HttpResponseForbidden
-from django.template.loader import render_to_string
 
-# Importamos reportlab para generar PDFs nativos
 try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib import colors
@@ -80,7 +89,6 @@ except Exception:
     reportlab_available = False
 
 def home(request):
-    """Vista principal del sistema"""
     vuelos_proximos = Vuelo.objects.filter(
         fecha_salida__gte=timezone.now(),
         estado='programado'
@@ -147,18 +155,13 @@ def buscar_vuelos(request):
     return render(request, 'gestion/buscar_vuelos.html', context)
 
 def detalle_vuelo(request, vuelo_id):
-    """Vista detallada de un vuelo específico"""
     vuelo = get_object_or_404(Vuelo, id=vuelo_id)
-
-    # Obtener información de asientos
     asientos = vuelo.avion.asientos.all().order_by('fila', 'columna')
     reservas_vuelo = Reserva.objects.filter(
         vuelo=vuelo,
         estado__in=['confirmada', 'pagada']
     ).select_related('asiento')
     asientos_reservados = {reserva.asiento.id for reserva in reservas_vuelo}
-
-    # Organizar asientos por fila
     asientos_por_fila = {}
     for asiento in asientos:
         if asiento.fila not in asientos_por_fila:
@@ -206,7 +209,6 @@ def detalle_vuelo(request, vuelo_id):
 
 @login_required
 def crear_reserva(request, vuelo_id):
-    """Vista para crear una nueva reserva"""
     vuelo = get_object_or_404(Vuelo, id=vuelo_id)
     
     # Obtener información de asientos para el mapa visual
@@ -226,13 +228,9 @@ def crear_reserva(request, vuelo_id):
     asiento_id_preseleccionado = request.GET.get('asiento')
     reserva_exitosa_codigo = request.session.pop('reserva_exitosa_codigo', None)
     if request.method == 'POST':
-        print('DEBUG: POST recibido en crear_reserva')
         pasajero_form = PasajeroForm(request.POST)
         reserva_form = ReservaForm(request.POST, vuelo_id=vuelo_id)
-        print('DEBUG: pasajero_form valido?', pasajero_form.is_valid())
-        print('DEBUG: reserva_form valido?', reserva_form.is_valid())
         if pasajero_form.is_valid() and reserva_form.is_valid():
-            # Limitar a 5 reservas por vuelo, eliminar solo las más antiguas si ya hay 5
             reservas_vuelo = Reserva.objects.filter(vuelo=vuelo).order_by('fecha_reserva')
             if reservas_vuelo.count() >= 5:
                 reservas_a_eliminar = reservas_vuelo[:reservas_vuelo.count() - 4]
@@ -245,7 +243,6 @@ def crear_reserva(request, vuelo_id):
                 documento=documento,
                 defaults=pasajero_form.cleaned_data
             )
-            print('DEBUG: Pasajero', pasajero, 'Creado:', created)
             if Reserva.objects.filter(vuelo=vuelo, pasajero=pasajero).exists():
                 messages.error(request, 'Este pasajero ya tiene una reserva para este vuelo.')
                 return redirect('detalle_vuelo', vuelo_id=vuelo.id)
@@ -265,18 +262,15 @@ def crear_reserva(request, vuelo_id):
                 reserva.estado = 'confirmada'
                 reserva.asiento = asiento
                 reserva.save()
-                print('DEBUG: Reserva creada:', reserva)
                 asiento.estado = 'reservado'
                 asiento.save()
                 Boleto.objects.create(reserva=reserva)
-                # Guardar el código de reserva en la sesión para mostrarlo en el modal
                 request.session['reserva_exitosa_codigo'] = reserva.codigo_reserva
                 return redirect('crear_reserva', vuelo_id=vuelo.id)
             else:
                 messages.error(request, 'Debe seleccionar un asiento.')
                 return redirect('crear_reserva', vuelo_id=vuelo.id)
     else:
-        # Precompletar datos si el usuario está autenticado
         initial_data = {}
         if request.user.is_authenticated:
             initial_data = {

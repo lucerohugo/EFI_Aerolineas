@@ -1,16 +1,10 @@
-"""
-Serializers para la API REST de AeroEFI
 
-Este módulo contiene todos los serializers necesarios para transformar
-los modelos de Django en representaciones JSON para la API REST.
-"""
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from ..models import Vuelo, Pasajero, Reserva, Asiento, Avion, Boleto
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer para el modelo User de Django"""
     
     class Meta:
         model = User
@@ -19,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AvionSerializer(serializers.ModelSerializer):
-    """Serializer para el modelo Avion"""
     
     asientos_count = serializers.SerializerMethodField()
     
@@ -29,12 +22,10 @@ class AvionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
     def get_asientos_count(self, obj):
-        """Retorna el número total de asientos del avión"""
         return obj.asientos.count()
 
 
 class AsientoSerializer(serializers.ModelSerializer):
-    """Serializer para el modelo Asiento"""
     
     avion_modelo = serializers.CharField(source='avion.modelo', read_only=True)
     esta_disponible = serializers.SerializerMethodField()
@@ -48,7 +39,6 @@ class AsientoSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
     def get_esta_disponible(self, obj):
-        """Verifica si el asiento está disponible"""
         return obj.estado == 'disponible'
 
 

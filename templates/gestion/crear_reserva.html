@@ -212,7 +212,7 @@
                     </div>
                     
                     {{ reserva_form.vuelo }}
-                    <!-- Campo método de pago eliminado de la parte inferior -->
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const seatButtons = document.querySelectorAll('.seat-btn');
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorDiv = document.getElementById('asiento-error');
     seatButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-            // Deseleccionar todos
+
             seatButtons.forEach(b => b.classList.remove('btn-primary'));
             seatButtons.forEach(b => b.classList.add('btn-outline-primary'));
             // Seleccionar este

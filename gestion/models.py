@@ -17,23 +17,13 @@ class Avion(models.Model):
         return f"{self.modelo} - Capacidad: {self.capacidad}"
     
     def save(self, *args, **kwargs):
-        # Verificar que capacidad coincida con filas * columnas
         if self.capacidad != self.filas * self.columnas:
             self.capacidad = self.filas * self.columnas
         super().save(*args, **kwargs)
-        
-        # Crear asientos automáticamente si no existen
         if not self.asientos.exists():
             self.crear_asientos()
-        def save(self, *args, **kwargs):
-            if self.capacidad != self.filas * self.columnas:
-                self.capacidad = self.filas * self.columnas
-            super().save(*args, **kwargs)
-            if not self.asientos.exists():
-                self.crear_asientos()
     
     def crear_asientos(self):
-        """Crear asientos automáticamente basado en filas y columnas"""
         letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         for fila in range(1, self.filas + 1):
             for col in range(self.columnas):
@@ -46,19 +36,6 @@ class Avion(models.Model):
                     columna=letra,
                     tipo='economica'
                 )
-        def crear_asientos(self):
-            letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            for fila in range(1, self.filas + 1):
-                for col in range(self.columnas):
-                    letra = letras[col] if col < len(letras) else f"A{col}"
-                    numero = f"{fila}{letra}"
-                    Asiento.objects.create(
-                        avion=self,
-                        numero=numero,
-                        fila=fila,
-                        columna=letra,
-                        tipo='economica'
-                    )
 
 class Vuelo(models.Model):
     ESTADOS_VUELO = [
@@ -185,7 +162,7 @@ class Reserva(models.Model):
     class Meta:
         verbose_name = "Reserva"
         verbose_name_plural = "Reservas"
-        unique_together = ['vuelo', 'pasajero']  # Un pasajero no puede tener más de una reserva por vuelo
+        unique_together = ['vuelo', 'pasajero']
         ordering = ['-fecha_reserva']
     
     def __str__(self):
