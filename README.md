@@ -408,5 +408,5 @@ MIT License - Ver archivo LICENSE para más detalles.
 
 ---
 
-**Desarrollado con ❤️ usando Django Rest Framework por Lucero/Cugiani/Perotti**
+**Desarrollado con ❤️ usando Django Rest Framework por Lucero/Cugiani/Perotti 05/11/2025**
 
