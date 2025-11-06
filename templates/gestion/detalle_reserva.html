@@ -18,18 +18,52 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header bg-success text-white">
-                <h4><i class="fas fa-ticket-alt"></i> Reserva Confirmada</h4>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-success" role="alert">
-                    <h5 class="alert-heading"><i class="fas fa-check-circle"></i> ¡Reserva Exitosa!</h5>
-                    <p>Tu reserva ha sido confirmada. Guarda este código para futuras consultas:</p>
-                    <hr>
-                    <h3 class="mb-0 text-center">
-                        <span class="badge bg-primary fs-4">{{ reserva.codigo_reserva }}</span>
-                    </h3>
+            {% if reserva.estado == 'confirmada' %}
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-ticket-alt"></i> Reserva Confirmada</h4>
                 </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-check-circle"></i> ¡Reserva Exitosa!</h5>
+                        <p>Tu reserva ha sido confirmada. Guarda este código para futuras consultas:</p>
+            {% elif reserva.estado == 'cancelada' %}
+                <div class="card-header bg-danger text-white">
+                    <h4><i class="fas fa-times-circle"></i> Reserva Cancelada</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-times-circle"></i> ¡Reserva Cancelada!</h5>
+                        <p>Tu reserva ha sido cancelada. Este es el código de la reserva cancelada:</p>
+            {% elif reserva.estado == 'pagada' %}
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-credit-card"></i> Reserva Pagada</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-primary" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-credit-card"></i> ¡Reserva Pagada!</h5>
+                        <p>Tu reserva ha sido pagada exitosamente. Código de confirmación:</p>
+            {% elif reserva.estado == 'completada' %}
+                <div class="card-header bg-info text-white">
+                    <h4><i class="fas fa-flag-checkered"></i> Reserva Completada</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-flag-checkered"></i> ¡Reserva Completada!</h5>
+                        <p>Tu reserva ha sido completada. El vuelo ha finalizado. Código de la reserva:</p>
+            {% else %}
+                <div class="card-header bg-warning text-dark">
+                    <h4><i class="fas fa-clock"></i> Reserva Pendiente</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-clock"></i> ¡Reserva Pendiente!</h5>
+                        <p>Tu reserva está pendiente de confirmación. Código de referencia:</p>
+            {% endif %}
+                        <hr>
+                        <h3 class="mb-0 text-center">
+                            <span class="badge bg-primary fs-4">{{ reserva.codigo_reserva }}</span>
+                        </h3>
+                    </div>
                 
                 <div class="row">
                     <div class="col-md-6">
@@ -144,8 +178,6 @@
                         <a href="{% url 'reserva_pdf' reserva.id %}" class="btn btn-secondary ms-2">
                             <i class="fas fa-file-pdf"></i> Descargar PDF
                         </a>
-                        <button onclick="window.print()" class="btn btn-outline-secondary ms-2">
-                            <i class="fas fa-print"></i> Imprimir (vista)</button>
                     </div>
                 </div>
             </div>

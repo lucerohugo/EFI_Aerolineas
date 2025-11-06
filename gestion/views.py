@@ -580,7 +580,14 @@ def lista_vuelos(request):
     origenes = Vuelo.objects.values_list('origen', flat=True).distinct().order_by('origen')
     destinos = Vuelo.objects.values_list('destino', flat=True).distinct().order_by('destino')
 
-    vuelos_list = Vuelo.objects.all().order_by('-fecha_salida')
+    # Filtrar vuelos según el tipo de usuario
+    if request.user.is_authenticated and request.user.is_staff:
+        # Los administradores ven todos los vuelos
+        vuelos_list = Vuelo.objects.all().order_by('-fecha_salida')
+    else:
+        # Los usuarios normales solo ven vuelos programados
+        vuelos_list = Vuelo.objects.filter(estado='programado').order_by('-fecha_salida')
+    
     if origen:
         vuelos_list = vuelos_list.filter(origen=origen)
     if destino:
@@ -593,15 +600,22 @@ def lista_vuelos(request):
     page_number = request.GET.get('page')
     vuelos = paginator.get_page(page_number)
 
+    # Configurar contexto según el tipo de usuario
     context = {
         'vuelos': vuelos,
-        'estados_vuelo': Vuelo.ESTADOS_VUELO,
         'origenes': origenes,
         'destinos': destinos,
         'origen_seleccionado': origen,
         'destino_seleccionado': destino,
         'estado_seleccionado': estado,
     }
+    
+    # Solo los administradores pueden filtrar por estado
+    if request.user.is_authenticated and request.user.is_staff:
+        context['estados_vuelo'] = Vuelo.ESTADOS_VUELO
+        context['mostrar_filtro_estado'] = True
+    else:
+        context['mostrar_filtro_estado'] = False
     return render(request, 'gestion/lista_vuelos.html', context)
 
 @login_required
